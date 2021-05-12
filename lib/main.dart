@@ -1,4 +1,8 @@
+
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+
+import 'tree.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,6 +51,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Church church = Church(name: 'coole Kirche');
 
   void _incrementCounter() {
     setState(() {
@@ -100,6 +105,10 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            //Text(
+            //  church.name + ', attenders: ${church.attenders}'
+            //),
+            CustomPaint(size: Size(400, 400), painter: ChurchPainter(church))
           ],
         ),
       ),
@@ -110,4 +119,28 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+class ChurchPainter extends CustomPainter {
+  Church church;
+  ChurchPainter(this.church);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final textStyle = ui.TextStyle(
+      color: Colors.black,
+      fontSize: 30,
+    );
+    final paragraphStyle = ui.ParagraphStyle();
+    final paragraphBuilder = ui.ParagraphBuilder(paragraphStyle)
+      //..pushStyle(textStyle)
+      ..addText(church.name);
+    final constraints = ui.ParagraphConstraints(width: 300);
+    final paragraph = paragraphBuilder.build();
+    paragraph.layout(constraints);
+    final offset = Offset(50, 100);
+    canvas.drawParagraph(paragraph, offset);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
