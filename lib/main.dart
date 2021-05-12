@@ -1,4 +1,4 @@
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
@@ -15,15 +15,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Genmapper Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.red,
       ),
       home: MyHomePage(title: 'Genmapper'),
@@ -31,101 +22,82 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  Church church = Church(name: 'coole Kirche');
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final Church church =
+      Church(name: "coole Kirche"); //create test church instance
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            //Text(
-            //  church.name + ', attenders: ${church.attenders}'
-            //),
-            CustomPaint(size: Size(400, 400), painter: ChurchPainter(church))
+            DisplayChurch(church),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
 
+class DisplayChurch extends StatefulWidget {
+  //Widget to display one church object
+  final Church church;
+  DisplayChurch(this.church);
+  @override
+  _DisplayChurchState createState() => _DisplayChurchState();
+}
+
+class _DisplayChurchState extends State<DisplayChurch> {
+  bool isToggled; //is the mouse cursor in the widget area?
+
+  @override
+  void initState() {
+    super.initState();
+    isToggled =
+        false; //defaults to false, Todo: probably check if cursor is in the widget area
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      //detects mouse movements
+      onEnter: (_) {
+        setState(() {
+          isToggled = !isToggled;
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          isToggled = !isToggled;
+        });
+      },
+      child: CustomPaint(
+        //widget for painting stuff
+        size: Size(200, 200),
+        painter: ChurchPainter(widget.church, isToggled),
+      ),
+    );
+  }
+}
+
 class ChurchPainter extends CustomPainter {
+  //actually paint the church
   Church church;
-  ChurchPainter(this.church);
+  bool isToggled;
+  ChurchPainter(this.church, this.isToggled);
   @override
   void paint(Canvas canvas, Size size) {
+    Paint circlePaint = Paint();
+    circlePaint.color = Colors.black;
+    circlePaint.style = PaintingStyle.stroke;
+    Paint fillCircle = Paint()..color = isToggled ? Colors.blue : Colors.red;
     final textStyle = ui.TextStyle(
       color: Colors.black,
       fontSize: 30,
@@ -137,10 +109,12 @@ class ChurchPainter extends CustomPainter {
     final constraints = ui.ParagraphConstraints(width: 300);
     final paragraph = paragraphBuilder.build();
     paragraph.layout(constraints);
-    final offset = Offset(50, 100);
+    final offset = Offset(0, 0);
     canvas.drawParagraph(paragraph, offset);
+    canvas.drawCircle(Offset(100, 100), 100, circlePaint);
+    canvas.drawCircle(Offset(100, 100), 99, fillCircle);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) => true; //todo: write condition when to repaint
 }
